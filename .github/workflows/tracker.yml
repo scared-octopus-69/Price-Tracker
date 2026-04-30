@@ -1,0 +1,40 @@
+name: Price Tracker
+
+on:
+  schedule:
+    - cron: '0 22 * * *'   # Runs daily at 22:00 UTC = 8am or 9am AEST
+  workflow_dispatch:        # Lets you manually trigger from GitHub
+
+jobs:
+  run-tracker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Needed to save updated prices back
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run price tracker
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EXCHANGE_RATE_API_KEY: ${{ secrets.EXCHANGE_RATE_API_KEY }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+        run: python tracker.py
+
+      - name: Save updated prices back to the repo
+        run: |
+          git config user.name "price-bot"
+          git config user.email "bot@bot.com"
+          git add last_prices.json
+          git diff --staged --quiet || git commit -m "Update saved prices [skip ci]"
+          git push
