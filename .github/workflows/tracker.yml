@@ -36,5 +36,12 @@ jobs:
           git config user.name "price-bot"
           git config user.email "bot@bot.com"
           git add last_prices.json
-          git diff --staged --quiet || git commit -m "Update saved prices [skip ci]"
-          git push
+          git diff --staged --quiet && exit 0
+          git commit -m "Update saved prices [skip ci]"
+          for i in 1 2 3; do
+            git pull --rebase origin main && git push && exit 0
+            echo "Push attempt $i failed, retrying..."
+            sleep 2
+          done
+          echo "Failed to push after 3 attempts"
+          exit 1
