@@ -170,7 +170,8 @@ def main():
         send_telegram("\n".join(lines))
         print(f"\n✓ Sent Telegram alert with {len(changes)} change(s)")
     else:
-        print("\n✓ No changes detected — no Telegram message sent")
+        send_telegram(f"✅ Prices have not changed on all products ({len(current_prices)} tracked)")
+        print("\n✓ No changes detected — sent 'no changes' Telegram message")
 
 
 if __name__ == "__main__":
